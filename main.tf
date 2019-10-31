@@ -1,18 +1,27 @@
 
 
-resource "aws_eks_cluster" "eks-cluster" {
-  name     = "eks_cluster"
-  role_arn = "${aws_iam_role.example.arn}"
+variable "vpc-subnet-cidr" {
+}
+
+variable "eks-cw-logging" {
+}
+
+resource "aws_eks_cluster" "eks" {
+  name = "${var.cluster-name}"
+
+  version = "${var.k8s-version}"
+
+  role_arn = "${aws_iam_role.cluster.arn}"
 
   vpc_config {
-    subnet_ids = ["${aws_subnet.example1.id}", "${aws_subnet.example2.id}"]
+    security_group_ids = [data.aws_security_group.cluster.id]
+    subnet_ids         = data.aws_subnet_ids.private.ids
   }
-}
 
-output "endpoint" {
-  value = "${aws_eks_cluster.example.endpoint}"
-}
+  enabled_cluster_log_types = var.eks-cw-logging
 
-output "kubeconfig-certificate-authority-data" {
-  value = "${aws_eks_cluster.example.certificate_authority.0.data}"
+  depends_on = [
+    "aws_iam_role_policy_attachment.cluster-AmazonEKSClusterPolicy",
+    "aws_iam_role_policy_attachment.cluster-AmazonEKSServicePolicy",
+  ]
 }
