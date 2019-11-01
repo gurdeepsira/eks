@@ -18,6 +18,8 @@ resource "aws_eks_cluster" "eks" {
     subnet_ids         = data.aws_subnet_ids.private.ids
   }
 
+
+
   enabled_cluster_log_types = var.eks-cw-logging
 
   depends_on = [
